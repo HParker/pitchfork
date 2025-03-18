@@ -79,6 +79,7 @@ module Pitchfork
     # :stopdoc:
     attr_accessor :app, :timeout, :timeout_signal, :soft_timeout, :cleanup_timeout, :spawn_timeout, :worker_processes,
                   :before_fork, :after_worker_fork, :after_mold_fork, :before_service_worker_ready, :before_service_worker_exit,
+                  :around_app_boot,
                   :listener_opts, :children,
                   :orig_app, :config, :ready_pipe, :early_hints, :setpgid
     attr_writer   :after_worker_exit, :before_worker_exit, :after_worker_ready, :after_request_complete,
@@ -1122,13 +1123,15 @@ module Pitchfork
 
       proc_name status: "booting"
 
-      self.app = case app.arity
-      when 0
-        app.call
-      when 2
-        app.call(nil, self)
-      when 1
-        app # already a rack app
+      @around_app_boot&.call(self) do
+        self.app = case app.arity
+        when 0
+          app.call
+        when 2
+          app.call(nil, self)
+        when 1
+          app # already a rack app
+        end
       end
     end
 

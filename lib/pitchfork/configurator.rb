@@ -65,6 +65,9 @@ module Pitchfork
       :after_monitor_ready => lambda { |server|
         server.logger.info("monitor pid=#{Process.pid} ready")
       },
+      :around_app_boot => lambda { |server, &block|
+        block.call
+      },
       :after_worker_timeout => nil,
       :after_worker_hard_timeout => nil,
       :after_request_complete => nil,
@@ -183,6 +186,10 @@ module Pitchfork
 
     def before_service_worker_exit(&block)
       set_hook(:before_service_worker_exit, block, 2)
+    end
+
+    def around_app_boot(*args, &block)
+      set_hook(:around_app_boot, block_given? ? block : args[0], 1)
     end
 
     def timeout(seconds, cleanup: 2)

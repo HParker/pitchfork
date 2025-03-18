@@ -463,6 +463,20 @@ after_worker_exit do |server, worker, status|
 end
 ```
 
+### `around_app_boot`
+
+Called when the application is booting.
+
+```ruby
+around_app_boot do |server|
+  server.logger.info("Application boot for #{Process.pid} started")
+  block.call
+  server.logger.info("Application boot for #{Process.pid} complete")
+end
+```
+
+Useful for tracking application boot time and reporting any other metrics about application boot like heap contents.
+
 ### `after_request_complete`
 
 Called in the worker processes after a request has completed.
